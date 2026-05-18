@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Visitor sign-in</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header__text">
+      <h1 class="header__title">Visitor sign-in</h1>
+      <p class="header__subtitle">Please complete all steps</p>
+    </div>
+  </header>
+
+  <main class="shell">
+    <form id="visitorForm" class="card" novalidate>
+      <div class="card__brand">
+        <div class="header__logo-wrap">
+          <img
+            class="header__logo"
+            src="/static/img/sbi-logo.png"
+            alt="Solution Based Innovation"
+            width="560"
+            decoding="async"
+          />
+        </div>
+      </div>
+
+      <div class="progress" aria-hidden="true">
+        <div class="progress__fill" id="progressFill"></div>
+      </div>
+
+      <section class="step" data-step="0">
+        <h2 class="step__heading">Your details</h2>
+        <label class="field">
+          <span class="field__label">First name <span class="req">*</span></span>
+          <input class="field__input" name="visitor_first_name" type="text" autocomplete="given-name" required maxlength="100" />
+        </label>
+        <label class="field">
+          <span class="field__label">Last name <span class="req">*</span></span>
+          <input class="field__input" name="visitor_last_name" type="text" autocomplete="family-name" required maxlength="100" />
+        </label>
+        <label class="field">
+          <span class="field__label">Company / organization</span>
+          <input class="field__input" name="company" type="text" autocomplete="organization" maxlength="200" />
+        </label>
+
+        <div class="subhead subhead--inset">
+          <h3 class="subhead__title">Who are you here to see? <span class="req" aria-hidden="true">*</span></h3>
+          <p class="subhead__hint">Use the list below, type a name, or both.</p>
+        </div>
+        <label class="field">
+          <span class="field__label">Choose from the list</span>
+          <select id="hostQuickPick" class="field__input field__input--select" aria-label="Choose host from list">
+            <option value="" selected disabled>Select host…</option>
+            <option value="Brad Stewart">Brad Stewart</option>
+            <option value="Iulia Borovic">Iulia Borovic</option>
+            <option value="Big Engraving">Big Engraving</option>
+            <option value="As Understood">As Understood</option>
+            <option value="Blaney Philips">Blaney Philips</option>
+            <option value="Chase Brown">Chase Brown</option>
+            <option value="Dez Young">Dez Young</option>
+            <option value="Mary Hughes">Mary Hughes</option>
+            <option value="Sean Bagdon">Sean Bagdon</option>
+            <option value="Sergey Kosov">Sergey Kosov</option>
+            <option value="William Roach">William Roach</option>
+            <option value="Auston Stewart">Auston Stewart</option>
+            <option value="Not Listed">Not Listed</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Or type a name <span class="req">*</span></span>
+          <input
+            class="field__input"
+            id="hostNameInput"
+            name="host_name"
+            type="text"
+            autocomplete="off"
+            required
+            maxlength="200"
+            placeholder="Required — choose above or type here"
+          />
+        </label>
+
+        <label class="field">
+          <span class="field__label">Phone number <span class="req">*</span></span>
+          <input class="field__input" name="phone" type="tel" autocomplete="tel" inputmode="tel" required minlength="7" maxlength="40" placeholder="e.g. 555-123-4567" />
+        </label>
+        <label class="field">
+          <span class="field__label">Email address <span class="req">*</span></span>
+          <input class="field__input" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com" />
+        </label>
+        <label class="field field--checkbox" for="emailContactPermission">
+          <input
+            class="field__check"
+            type="checkbox"
+            name="email_contact_permission"
+            id="emailContactPermission"
+            value="1"
+          />
+          <span class="field__check-label">I give permission to be contacted via email.</span>
+        </label>
+
+        <fieldset class="field field--radios">
+          <legend class="field__label">
+            Are you a U.S. citizen or U.S. national? <span class="req" aria-hidden="true">*</span>
+          </legend>
+          <div class="field__options" role="radiogroup" aria-required="true">
+            <label class="field__radio-row">
+              <input
+                class="field__radio"
+                type="radio"
+                name="us_citizen_or_national"
+                value="yes"
+                required
+                autocomplete="off"
+              />
+              <span>Yes</span>
+            </label>
+            <label class="field__radio-row">
+              <input class="field__radio" type="radio" name="us_citizen_or_national" value="no" autocomplete="off" />
+              <span>No</span>
+            </label>
+          </div>
+        </fieldset>
+      </section>
+
+      <section class="step is-hidden" data-step="1">
+        <h2 class="step__heading">Your visit</h2>
+        <label class="field">
+          <span class="field__label">Purpose of visit</span>
+          <textarea class="field__input field__input--multiline" name="visit_purpose" rows="3" maxlength="500"></textarea>
+        </label>
+      </section>
+
+      <section class="step is-hidden" data-step="2">
+        <h2 class="step__heading">Review</h2>
+        <dl class="review" id="reviewBlock"></dl>
+      </section>
+
+      <p class="banner banner--error is-hidden" id="errorBanner" role="alert"></p>
+      <p class="banner banner--ok is-hidden" id="okBanner" role="status"></p>
+
+      <div class="actions">
+        <button type="button" class="btn btn--ghost" id="btnBack">Back</button>
+        <button type="button" class="btn btn--primary" id="btnNext">Continue</button>
+        <button type="submit" class="btn btn--primary is-hidden" id="btnSubmit">Submit</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    (function () {
+      const form = document.getElementById("visitorForm");
+      const steps = Array.from(form.querySelectorAll(".step"));
+      const btnBack = document.getElementById("btnBack");
+      const btnNext = document.getElementById("btnNext");
+      const btnSubmit = document.getElementById("btnSubmit");
+      const progressFill = document.getElementById("progressFill");
+      const reviewBlock = document.getElementById("reviewBlock");
+      const errorBanner = document.getElementById("errorBanner");
+      const okBanner = document.getElementById("okBanner");
+      const hostQuickPick = document.getElementById("hostQuickPick");
+      const hostNameInput = document.getElementById("hostNameInput");
+
+      if (hostQuickPick && hostNameInput) {
+        const hostOptionValues = Array.from(hostQuickPick.options)
+          .map(function (o) { return o.value; })
+          .filter(Boolean);
+        hostQuickPick.addEventListener("change", function () {
+          const v = hostQuickPick.value;
+          if (v) hostNameInput.value = v;
+        });
+        hostNameInput.addEventListener("input", function () {
+          const v = hostNameInput.value.trim();
+          if (hostOptionValues.indexOf(v) !== -1) hostQuickPick.value = v;
+          else hostQuickPick.selectedIndex = 0;
+        });
+      }
+
+      let stepIndex = 0;
+
+      function showError(msg) {
+        errorBanner.textContent = msg;
+        errorBanner.classList.remove("is-hidden");
+        okBanner.classList.add("is-hidden");
+      }
+      function clearBanners() {
+        errorBanner.classList.add("is-hidden");
+        okBanner.classList.add("is-hidden");
+        errorBanner.textContent = "";
+      }
+
+      function setStep(i) {
+        stepIndex = Math.max(0, Math.min(i, steps.length - 1));
+        steps.forEach((el, idx) => {
+          el.classList.toggle("is-hidden", idx !== stepIndex);
+        });
+        const pct = ((stepIndex + 1) / steps.length) * 100;
+        progressFill.style.width = pct + "%";
+
+        btnBack.classList.toggle("is-hidden", stepIndex === 0);
+        btnNext.classList.toggle("is-hidden", stepIndex === steps.length - 1);
+        btnSubmit.classList.toggle("is-hidden", stepIndex !== steps.length - 1);
+
+        if (stepIndex === steps.length - 1) {
+          const data = new FormData(form);
+          const labels = {
+            visitor_first_name: "First name",
+            visitor_last_name: "Last name",
+            company: "Company",
+            host_name: "Who you are here to see",
+            phone: "Phone",
+            email: "Email",
+            email_contact_permission: "OK to contact by email",
+            us_citizen_or_national: "U.S. citizen or national",
+            visit_purpose: "Purpose",
+          };
+          reviewBlock.innerHTML = "";
+          for (const [k, label] of Object.entries(labels)) {
+            let v;
+            if (k === "email_contact_permission") {
+              v = data.get("email_contact_permission") === "1" ? "Yes" : "No";
+            } else if (k === "us_citizen_or_national") {
+              const c = data.get("us_citizen_or_national");
+              v = c === "yes" ? "Yes" : c === "no" ? "No" : "—";
+            } else {
+              v = (data.get(k) || "").toString().trim() || "—";
+            }
+            const dt = document.createElement("dt");
+            dt.className = "review__term";
+            dt.textContent = label;
+            const dd = document.createElement("dd");
+            dd.className = "review__def";
+            dd.textContent = v;
+            reviewBlock.appendChild(dt);
+            reviewBlock.appendChild(dd);
+          }
+        }
+      }
+
+      function validateStep(i) {
+        const panel = steps[i];
+        const inputs = panel.querySelectorAll("input[required], textarea[required]");
+        for (const input of inputs) {
+          if (!input.checkValidity()) {
+            input.reportValidity();
+            return false;
+          }
+        }
+        return true;
+      }
+
+      btnBack.addEventListener("click", function () {
+        clearBanners();
+        setStep(stepIndex - 1);
+      });
+
+      btnNext.addEventListener("click", function () {
+        clearBanners();
+        if (!validateStep(stepIndex)) return;
+        setStep(stepIndex + 1);
+      });
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        clearBanners();
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return;
+        }
+        const data = new FormData(form);
+        const payload = {
+          visitor_first_name: (data.get("visitor_first_name") || "").toString().trim(),
+          visitor_last_name: (data.get("visitor_last_name") || "").toString().trim(),
+          company: (data.get("company") || "").toString().trim(),
+          phone: (data.get("phone") || "").toString().trim(),
+          email: (data.get("email") || "").toString().trim(),
+          host_name: (data.get("host_name") || "").toString().trim(),
+          visit_purpose: (data.get("visit_purpose") || "").toString().trim(),
+          email_contact_permission: data.get("email_contact_permission") === "1",
+          us_citizen_or_national: data.get("us_citizen_or_national") === "yes",
+        };
+        btnSubmit.disabled = true;
+        try {
+          const res = await fetch("/api/visitors", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const body = await res.json().catch(function () { return {}; });
+          if (!res.ok) {
+            const detail = body.detail;
+            const msg = Array.isArray(detail)
+              ? detail.map(function (d) { return d.msg || d; }).join(" ")
+              : (typeof detail === "string" ? detail : "Could not save. Please try again.");
+            showError(msg);
+            return;
+          }
+          okBanner.textContent = "Thank You. Someone will see you shortly.";
+          okBanner.classList.remove("is-hidden");
+          form.reset();
+          setStep(0);
+        } catch (err) {
+          showError("Network error. Please check connection and try again.");
+        } finally {
+          btnSubmit.disabled = false;
+        }
+      });
+
+      setStep(0);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+---
+description: Production kiosk backend host and Tailscale connectivity (no secrets).
+alwaysApply: true
+---
+
+# Kiosk backend (Tailscale)
+
+The visitor API runs on the Linux backend reached over **Tailscale**, not only localhost.
+
+| Field | Value |
+|-------|--------|
+| Tailscale machine name | `sbikioskbackend-1` |
+| OS hostname | `sbikioskbackend` |
+| MagicDNS (preferred for URLs) | `sbikioskbackend-1.tail96d5df.ts.net` |
+| Tailscale IPv4 | `100.111.181.5` |
+| Tailscale IPv6 | `fd7a:115c:a1e0::4638:b505` |
+| Tailscale client version | `1.96.4` |
+| Tailscale node ID (admin UI) | `nQvthjVdkB21CNTRL` |
+| OS | Linux `6.8.0-111-generic` |
+
+**Typical app URL** (default app port): `http://sbikioskbackend-1.tail96d5df.ts.net:8000` (or `http://100.111.181.5:8000`).
+
+**TLS**: MagicDNS hostname may not have an HTTPS cert yet; use HTTP unless TLS is configured on the app.
+
+**Secrets**: Never store Tailscale **node keys** or similar in this repo or in rules. If a node key was ever pasted into chat, rotate it in the Tailscale admin console if there is any exposure risk.
+
+## Deploying code to the server (not your Windows laptop)
+
+CUPS, Zebra scripts, `systemd`, and `/var/lib/visitor-kiosk` all run on **`sbikioskbackend`**, reached over **Tailscale SSH** (MagicDNS or `100.111.181.5`). After editing the repo on Windows, sync to `~/visitor-kiosk` on the server using one of:
+
+- **Git** (if the repo has a remote): commit/push from Windows, then on the server `cd ~/visitor-kiosk && git pull`.
+- **scp over Tailscale** from **PowerShell** (project root). User/host: `sbikioskbackend@sbikioskbackend-1.tail96d5df.ts.net`. If `scp` says permission denied on the server dirs, run once on the server: `chmod u+w ~/visitor-kiosk/app ~/visitor-kiosk/templates ~/visitor-kiosk/deploy`.
+
+**Canonical sync commands** (copy as-is from `visitor-kiosk` root):
+
+```powershell
+cd "C:\Users\stewa\OneDrive\Desktop\Courser AI projects\visitor-kiosk"
+```
+
+**App Python (`app/`):**
+
+```powershell
+scp .\app\main.py .\app\schemas.py .\app\badge.py sbikioskbackend@sbikioskbackend-1.tail96d5df.ts.net:~/visitor-kiosk/app/
+```
+
+**Templates:**
+
+```powershell
+scp .\templates\index.html sbikioskbackend@sbikioskbackend-1.tail96d5df.ts.net:~/visitor-kiosk/templates/
+```
+
+**Deploy scripts / ZPL:**
+
+```powershell
+scp .\deploy\install-server.sh .\deploy\setup-zebra-ethernet-cups.sh .\deploy\zebra-print-test.sh .\deploy\zebra-test.zpl sbikioskbackend@sbikioskbackend-1.tail96d5df.ts.net:~/visitor-kiosk/deploy/
+```
+
+**Requirements (when `requirements.txt` changed):**
+
+```powershell
+scp .\requirements.txt sbikioskbackend@sbikioskbackend-1.tail96d5df.ts.net:~/visitor-kiosk/
+```
+
+**Typical code + UI together (one line):**
+
+```powershell
+cd "C:\Users\stewa\OneDrive\Desktop\Courser AI projects\visitor-kiosk"; scp .\app\main.py .\app\schemas.py .\app\badge.py sbikioskbackend@sbikioskbackend-1.tail96d5df.ts.net:~/visitor-kiosk/app/; scp .\templates\index.html sbikioskbackend@sbikioskbackend-1.tail96d5df.ts.net:~/visitor-kiosk/templates/
+```
+
+**After sync on the server:** `sudo systemctl restart visitor-kiosk` (and `cd ~/visitor-kiosk && ./venv/bin/pip install -r requirements.txt` if dependencies changed).
+
+Then run install/test commands **on the server SSH session**, not on localhost.
+
+Badge printing uses CUPS on the server: set **`ZEBRA_CUPS_QUEUE`** (same name as `lpstat -p`) on the `visitor-kiosk` systemd service. If unset, submissions still save; no print is attempted. Default setup is **USB**: add the Zebra at `http://127.0.0.1:631/` with a raw/ZPL queue, then set `ZEBRA_CUPS_QUEUE` to that queue name. Optional LAN printing: `bash deploy/setup-zebra-ethernet-cups.sh` (JetDirect `socket://…:9100`).
