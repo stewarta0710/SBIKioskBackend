@@ -46,6 +46,24 @@
           <span class="field__label">Company / organization</span>
           <input class="field__input" name="company" type="text" autocomplete="organization" maxlength="200" />
         </label>
+        <label class="field">
+          <span class="field__label">Your phone number <span class="req">*</span></span>
+          <input class="field__input" name="phone" type="tel" autocomplete="tel" inputmode="tel" required minlength="7" maxlength="40" placeholder="e.g. 555-123-4567" />
+        </label>
+        <label class="field">
+          <span class="field__label">Your email address <span class="req">*</span></span>
+          <input class="field__input" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com" />
+        </label>
+        <label class="field field--checkbox" for="emailContactPermission">
+          <input
+            class="field__check"
+            type="checkbox"
+            name="email_contact_permission"
+            id="emailContactPermission"
+            value="1"
+          />
+          <span class="field__check-label">I give permission to be contacted via email.</span>
+        </label>
 
         <div class="subhead subhead--inset">
           <h3 class="subhead__title">Who are you here to see? <span class="req" aria-hidden="true">*</span></h3>
@@ -82,25 +100,6 @@
             maxlength="200"
             placeholder="Required — choose above or type here"
           />
-        </label>
-
-        <label class="field">
-          <span class="field__label">Phone number <span class="req">*</span></span>
-          <input class="field__input" name="phone" type="tel" autocomplete="tel" inputmode="tel" required minlength="7" maxlength="40" placeholder="e.g. 555-123-4567" />
-        </label>
-        <label class="field">
-          <span class="field__label">Email address <span class="req">*</span></span>
-          <input class="field__input" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com" />
-        </label>
-        <label class="field field--checkbox" for="emailContactPermission">
-          <input
-            class="field__check"
-            type="checkbox"
-            name="email_contact_permission"
-            id="emailContactPermission"
-            value="1"
-          />
-          <span class="field__check-label">I give permission to be contacted via email.</span>
         </label>
 
         <fieldset class="field field--radios">
@@ -212,8 +211,8 @@
             visitor_last_name: "Last name",
             company: "Company",
             host_name: "Who you are here to see",
-            phone: "Phone",
-            email: "Email",
+            phone: "Your phone number",
+            email: "Your email",
             email_contact_permission: "OK to contact by email",
             us_citizen_or_national: "U.S. citizen or national",
             visit_purpose: "Purpose",
